@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Voting App Simulation</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            color: #1e293b;
+            text-align: center;
+        }
+
+        h1 {
+            color: #163b70;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            margin: 20px auto;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px #00000012;
+        }
+
+        .votes {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .vote-card {
+            width: 220px;
+            padding: 18px;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
+        .count {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 12px;
+        }
+
+        button {
+            border: none;
+            padding: 13px 20px;
+            margin: 6px;
+            border-radius: 8px;
+            color: white;
+            background: #2563eb;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .dog {
+            background: #ea580c;
+        }
+
+        .reset {
+            background: #64748b;
+        }
+
+        .oled {
+            background: #06130e;
+            color: #63ff9a;
+            font-family: monospace;
+            font-size: 20px;
+            padding: 25px 12px;
+            border: 5px solid #64748b;
+            border-radius: 12px;
+            max-width: 340px;
+            margin: 15px auto;
+            line-height: 1.8;
+        }
+
+        #status {
+            color: #475569;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h1>Smart Voting App</h1>
+    <p>Software Simulation of Physical Voting Buttons</p>
+
+    <section class="panel">
+        <h2>Live Voting Dashboard</h2>
+
+        <div class="votes">
+            <div class="vote-card">
+                <h3>🐱 Cats</h3>
+                <div class="count" id="cats">0</div>
+                <button onclick="castVote('cats')">
+                    Vote for Cats
+                </button>
+            </div>
+
+            <div class="vote-card">
+                <h3>🐶 Dogs</h3>
+                <div class="count" id="dogs">0</div>
+                <button class="dog" onclick="castVote('dogs')">
+                    Vote for Dogs
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Virtual Hardware Simulation</h2>
+        <p>These on-screen buttons simulate physical button presses.</p>
+
+        <button onclick="castVote('cats')">
+            🔘 Press Cats Button
+        </button>
+
+        <button class="dog" onclick="castVote('dogs')">
+            🔘 Press Dogs Button
+        </button>
+
+        <h3>Virtual OLED Display</h3>
+        <div class="oled">
+            SMART VOTING SYSTEM<br>
+            ------------------<br>
+            CATS: <span id="oledCats">0</span><br>
+            DOGS: <span id="oledDogs">0</span><br>
+            TOTAL: <span id="total">0</span>
+        </div>
+        <p id="status">Connecting to server...</p>
+    </section>
+
+    <section class="panel">
+        <h2>Project Information</h2>
+        <p>Frontend: HTML, CSS, JavaScript</p>
+        <p>Backend: Python Flask</p>
+        <p>Current mode: Software simulation</p>
+    </section>
+</div>
+
+<script>
+    async function updateResults() {
+        try {
+            const response = await fetch("/results");
+            if (!response.ok) throw new Error("Server error");
+
+            const votes = await response.json();
+
+            document.getElementById("cats").textContent = votes.cats;
+            document.getElementById("dogs").textContent = votes.dogs;
+            document.getElementById("oledCats").textContent = votes.cats;
+            document.getElementById("oledDogs").textContent = votes.dogs;
+            document.getElementById("total").textContent =
+                votes.cats + votes.dogs;
+
+            document.getElementById("status").textContent =
+                "Connected | Votes updated successfully";
+        } catch (error) {
+            document.getElementById("status").textContent =
+                "Cannot connect. Check that Flask is running.";
+        }
+    }
+
+    async function castVote(choice) {
+        try {
+            const response = await fetch("/vote/" + choice, {
+                method: "POST"
+            });
+
+            if (!response.ok) throw new Error("Vote failed");
+
+            await updateResults();
+        } catch (error) {
+            document.getElementById("status").textContent =
+                "Vote failed. Please check the server.";
+        }
+    }
+
+    updateResults();
+    setInterval(updateResults, 2000);
+</script>
+</body>
+</html>
